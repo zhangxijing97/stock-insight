@@ -1,0 +1,7 @@
+google-adk
+yfinance
+pandas
+numpy==1.26.4
+scikit-learn
+tensorflow
+prophet
