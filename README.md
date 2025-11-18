@@ -4,8 +4,6 @@ Stock-Insight is a multi-agent financial analysis system powered by **Google ADK
 It behaves like a small research team: one agent collects data, others analyze fundamentals,
 risks, and valuation, and a final writer produces a clean, structured stock report.
 
----
-
 ## 🚀 Features
 
 - **Price Lookup** – Real-time stock prices via Yahoo Finance  
@@ -18,8 +16,6 @@ risks, and valuation, and a final writer produces a clean, structured stock repo
   ```
   data → fundamental → risk → valuation → final_writer
   ```
-
----
 
 ## 🧠 Architecture
 
@@ -34,8 +30,6 @@ root_agent (router)
        ├── valuation_analyst_agent
        └── final_writer_agent
 ```
-
----
 
 ## 🔧 Setup
 
@@ -52,8 +46,6 @@ GOOGLE_GENAI_USE_VERTEXAI=0
 GOOGLE_API_KEY=your_api_key_here
 ```
 
----
-
 ## ▶️ Run
 
 ### Developer UI
@@ -65,8 +57,6 @@ adk web
 ```bash
 adk serve
 ```
-
----
 
 ## 💬 Example Usage
 
@@ -85,8 +75,6 @@ Give me a full analysis of TSLA.
 Tell me about MSFT.
 ```
 Root agent will ask whether you want **price** or **full report**.
-
----
 
 ## 📄 Sample Output
 
