@@ -1,41 +1,33 @@
 from google.adk.agents import Agent
 from google.adk.tools.agent_tool import AgentTool
 
-from .tools.tools import get_current_time
-from .sub_agents.stock_analyst.agent import stock_analyst
-from .sub_agents.news_analyst.agent import news_analyst
+# Import the NEW planner agent
+from .sub_agents.planner.agent import stock_analysis_planner
 
-from .sub_agents.linear_regression_predictor.agent import linear_regression_agent
-from .sub_agents.prophet_predictor.agent import prophet_agent
-from .sub_agents.gru_predictor.agent import gru_agent
-from .sub_agents.lstm_predictor.agent import lstm_agent
+# Import the NEW simple tool
+from .tools.financial_tools import get_stock_price
 
+# This is the top-level agent, as you requested.
 root_agent = Agent(
-    name="tradeseer",
-    model="gemini-2.0-flash",
-    description="Core agent of TradeSeer-AI: routes financial queries for stock prices, market news, and AI-powered price predictions using models like Linear Regression, LSTM, GRU, LightGBM, and Prophet.",
+    name="stock_insight_core",
+    model="gemini-2.0-flash", # Use a strong model for routing
+    description="Core agent of TradeSeer-AI: routes financial queries for stock prices or full analysis reports.",
     instruction="""
-    You are the core agent of TradeSeer-AI — a financial assistant that routes user queries to the appropriate analysis tool.
+    You are the core agent of TradeSeer-AI — a financial assistant.
+    Your job is to route the user's request to the correct tool.
 
-    Responsibilities:
-    - For stock price lookup, use `stock_analyst`.
-    - For news-related questions, use `news_analyst`.
-    - For current time requests, use `get_current_time`.
-    - For stock price prediction:
-        - If the user mentions a method (e.g., "using LSTM", "with Prophet", "via GRU"), call that specific tool.
-        - If the method is not specified, ask:
-        "Which prediction method would you like to use: Linear Regression, LSTM, GRU, or Prophet?"
-        - After user confirms, pass the query to the corresponding prediction tool with their input.
+    -   If the user asks for a 'full analysis', 'report', 'deep dive', 
+        or 'complete overview' of a stock, you *must* use the 
+        `stock_analysis_planner` tool.
+        
+    -   If the user *only* asks for the current 'price' or 'cost' 
+        of a stock, use the `get_stock_price` tool.
 
-    Always be clear, context-aware, and accurate. If a query is ambiguous, ask a clarifying question before selecting a tool.
+    -   If the query is ambiguous, ask for clarification: 
+        "Are you looking for just the current price or a full analysis report?"
     """,
     tools=[
-        get_current_time,
-        AgentTool(stock_analyst),
-        AgentTool(news_analyst),
-        AgentTool(linear_regression_agent),
-        AgentTool(prophet_agent),
-        AgentTool(gru_agent),
-        AgentTool(lstm_agent),
+        get_stock_price, # For simple price requests
+        AgentTool(stock_analysis_planner), # For full analysis reports
     ],
 )
