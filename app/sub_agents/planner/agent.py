@@ -1,35 +1,30 @@
+# sub_agents/planner/agent.py
+
 from google.adk.agents import Agent
 from google.adk.tools.agent_tool import AgentTool
-# 确保相对路径正确
+# Ensure relative paths are correct
 from ..data_collector.agent import data_collector_agent
-from ..fundamental_analyst.agent import fundamental_analyst_agent
-from ..risk_analyst.agent import risk_analyst_agent
-from ..valuation_analyst.agent import valuation_analyst_agent
-from ..final_writer.agent import final_writer_agent
+from ..consolidated_writer.agent import consolidated_writer_agent 
 
 stock_analysis_planner = Agent(
     name="stock_analysis_planner",
     model="gemini-2.0-flash",
-    description="Orchestrates a 5-step workflow (data, fundamental, risk, valuation, writer) to produce a stock analysis report.",
+    description="Orchestrates the 2-step workflow: get data, then write report.",
     instruction="""
     You are a stock analysis report planner.
     Your task is to generate a report by calling a sequence of agents.
     You must call them in this exact order:
 
     1.  `data_collector_agent` (To get all financial data)
-    2.  `fundamental_analyst_agent` (To analyze the data)
-    3.  `risk_analyst_agent` (To analyze the data)
-    4.  `valuation_analyst_agent` (To analyze the data)
-    5.  `final_writer_agent` (To assemble the final report)
+    2.  `consolidated_writer_agent` (To analyze all data and write the final report)
 
-    Your final response to the user must be *only* the output
-    from the `final_writer_agent`. Do not add any other text or summary.
+    CRITICAL RULE: Your final response must be *the verbatim output* from the 
+    `consolidated_writer_agent`. Do not add any conversational text, summaries, 
+    preliminary greetings, or introductory phrases (like "Here is a stock analysis..."). 
+    Your output MUST START directly with the Markdown heading: '## Stock Analysis Report: [Ticker]'.
     """,
     tools=[
         AgentTool(data_collector_agent),
-        AgentTool(fundamental_analyst_agent),
-        AgentTool(risk_analyst_agent),
-        AgentTool(valuation_analyst_agent),
-        AgentTool(final_writer_agent),
+        AgentTool(consolidated_writer_agent),
     ],
 )

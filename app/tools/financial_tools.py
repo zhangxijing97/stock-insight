@@ -1,96 +1,70 @@
+# tools/financial_tools.py
+
 import yfinance as yf
-from typing import List, Dict, Any
+from typing import Dict, Any
+
+def _safe_get(info: Dict[str, Any], key: str, default: Any = None) -> Any:
+    """Helper for safely extracting values, handling None, 'N/A', and empty dicts/lists."""
+    val = info.get(key, default)
+    # yfinance often returns strings like 'None' or empty containers, standardize them to Python None
+    if val in (None, 'N/A', {}, []):
+        return None
+    return val
+
+def get_all_stock_data(ticker: str) -> Dict[str, Any]:
+    """
+    Fetches price, financial metrics, and news in a single, consistent call.
+    This eliminates data freshness issues caused by multiple yfinance calls.
+    """
+    try:
+        stock = yf.Ticker(ticker)
+        info = stock.info
+        news_data = stock.news
+        
+        # 1. Price Data (using multiple fallbacks for robustness)
+        price = (_safe_get(info, 'currentPrice') or 
+                 _safe_get(info, 'regularMarketPrice') or 
+                 _safe_get(info, 'previousClose'))
+        
+        if price is None:
+            return {"status": "error", "error_message": f"Could not find price or fundamental data for {ticker}"}
+
+        # 2. Metrics Data
+        metrics = {
+            "revenue": _safe_get(info, 'totalRevenue'),
+            "revenue_growth": _safe_get(info, 'revenueGrowth'),
+            "profit_margin": _safe_get(info, 'profitMargins'),
+            "cash_flow": _safe_get(info, 'operatingCashflow'),
+            "pe_ratio": _safe_get(info, 'trailingPE'),
+            "ps_ratio": _safe_get(info, 'priceToSales'),
+            "pb_ratio": _safe_get(info, 'priceToBook'),
+            "market_cap": _safe_get(info, 'marketCap')
+        }
+        
+        # 3. News Data
+        # Limit to 5 headlines and filter out any None titles
+        headlines = [_safe_get(item, 'title') for item in news_data if _safe_get(item, 'title') is not None][:5]
+        
+        return {
+            "status": "success",
+            "ticker": ticker,
+            "current_price": float(price),
+            "currency": _safe_get(info, 'currency', 'USD'),
+            "metrics": metrics,
+            "headlines": headlines
+        }
+
+    except Exception as e:
+        return {"status": "error", "error_message": f"Error fetching all data for {ticker}: {str(e)}"}
 
 def get_stock_price(ticker: str) -> Dict[str, Any]:
-    """
-    Gets the current stock price and currency for a given ticker.
-    
-    Args:
-        ticker: The stock symbol (e.g., "AAPL", "GOOGL").
-
-    Returns:
-        A dictionary with ticker, current price, and currency.
-    """
-    try:
-        stock = yf.Ticker(ticker)
-        info = stock.info
-        
-        price = info.get('currentPrice', info.get('regularMarketPrice'))
-        
-        if not price:
-            return {"status": "error", "error_message": f"Could not find price for {ticker}"}
-
+    """Gets the current stock price for a ticker (Used by root_agent for fast path)."""
+    data = get_all_stock_data(ticker)
+    if data['status'] == 'success':
         return {
             "status": "success",
-            "ticker": ticker,
-            "price": price,
-            "currency": info.get('currency', 'USD')
+            "ticker": data['ticker'],
+            "price": data['current_price'],
+            "currency": data['currency']
         }
-    except Exception as e:
-        return {"status": "error", "error_message": f"Error fetching price for {ticker}: {str(e)}"}
-
-def get_financial_metrics(ticker: str) -> Dict[str, Any]:
-    """
-    Gets key financial metrics for a ticker.
-    This provides data for Fundamental and Valuation agents.
-    
-    Args:
-        ticker: The stock symbol.
-
-    Returns:
-        A dictionary of key financial metrics.
-    """
-    try:
-        stock = yf.Ticker(ticker)
-        info = stock.info
-        
-        # Helper to safely get data
-        def _get(key, default="N/A"):
-            return info.get(key, default)
-
-        metrics = {
-            "ticker": ticker,
-            "revenue": _get('totalRevenue'),
-            "revenue_growth": _get('revenueGrowth'), # For fundamental
-            "profit_margin": _get('profitMargins'),  # For fundamental
-            "cash_flow": _get('operatingCashflow'), # For fundamental
-            "pe_ratio": _get('trailingPE'),          # For valuation
-            "ps_ratio": _get('priceToSales'),        # For valuation
-            "forward_pe": _get('forwardPE'),
-            "market_cap": _get('marketCap')
-        }
-        
-        if metrics["revenue"] == "N/A":
-             return {"status": "error", "error_message": f"No financial metrics found for {ticker}."}
-
-        return {"status": "success", "metrics": metrics}
-
-    except Exception as e:
-        return {"status": "error", "error_message": f"Error fetching metrics for {ticker}: {str(e)}"}
-
-def get_market_news(ticker: str) -> Dict[str, Any]:
-    """
-    Gets recent news headlines for a given ticker.
-    
-    Args:
-        ticker: The stock symbol.
-
-    Returns:
-        A dictionary containing a list of news headlines.
-    """
-    try:
-        stock = yf.Ticker(ticker)
-        news = stock.news
-        
-        if not news:
-            return {"status": "success", "headlines": ["No recent news found."]}
-        
-        # Extract just the titles
-        headlines = [item.get('title') for item in news if item.get('title')]
-        
-        return {
-            "status": "success",
-            "headlines": headlines[:5] # Return top 5
-        }
-    except Exception as e:
-        return {"status": "error", "error_message": f"Error fetching news for {ticker}: {str(e)}"}
+    return data # Returns the error dictionary if fetching failed
