@@ -20,15 +20,48 @@ risks, and valuation, and a final writer produces a clean, structured stock repo
 ## 🧠 Architecture
 
 ```
-root_agent (router)
+stock_insight/
 │
-├── get_stock_price (simple query)
-└── stock_analysis_planner (full workflow)
-       ├── data_collector_agent
-       ├── fundamental_analyst_agent
-       ├── risk_analyst_agent
-       ├── valuation_analyst_agent
-       └── final_writer_agent
+├── root_agent.py
+├── tools/
+│   └── financial_tools.py
+│
+└── sub_agents/
+    ├── planner/
+    │   └── agent.py   ← (需要修改)
+    │
+    ├── data_collector/
+    │   └── agent.py   ← (保持不变)
+    │
+    ├── fundamental/
+    │   └── agent.py   ← (新增)
+    │
+    ├── valuation/
+    │   └── agent.py   ← (新增)
+    │
+    ├── risks/
+    │   └── agent.py   ← (新增)
+    │
+    └── aggregator/
+        └── agent.py   ← (新增)
+```
+
+```
+Root Agent
+   ↓
+Planner Agent
+   ↓
+Data Collector Agent
+   ↓
+---------------------------------------
+↓ Fundamental Analysis Agent
+↓ Valuation Analysis Agent
+↓ Risk Analysis Agent
+---------------------------------------
+   ↓
+Aggregator Agent
+   ↓
+Final Markdown Report
 ```
 
 ## 🔧 Setup
