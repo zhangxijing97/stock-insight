@@ -42,29 +42,3 @@ When in doubt, prefer the full analysis planner for richer insights.
         AgentTool(stock_analysis_planner) # For full analysis reports
     ],
 )
-
-
-# # root_agent.py
-
-# from google.adk.agents import Agent
-# from google.adk.tools.agent_tool import AgentTool
-
-# # --- 1. 定义 TUNED_MODEL_PATH ---
-# # 确保这是你 Fine-tuned 模型的正确路径
-# TUNED_MODEL_PATH = "projects/gen-lang-client-0376134084/locations/us-west1/models/stock_insight"
-
-
-# # This is the TEMPORARY top-level agent for simple path testing.
-# root_agent = Agent(
-#     name="stock_insight_path_tester",
-#     # *** 直接将 root_agent 设置为 Fine-tuned 模型 ***
-#     model=TUNED_MODEL_PATH,
-#     description="Temporary agent used only to test if the fine-tuned model path is functional and authenticated.",
-#     instruction="""
-#     You are a simple test assistant. The user will ask you a basic general knowledge question. 
-#     You must answer the question using the knowledge of the model you are running.
-#     Do NOT mention stock analysis or financial metrics.
-#     """,
-#     # 移除所有工具，只测试模型本身的能力
-#     tools=[], 
-# )
