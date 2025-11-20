@@ -93,34 +93,15 @@ adk serve
 
 ## 💬 Example Usage
 
-**Price only**
-```
-What is the price of AAPL?
-```
-
 **Full analysis**
 ```
 Give me a full analysis of TSLA.
 ```
 
-**Ambiguous**
+**Price only**
 ```
-Tell me about MSFT.
+What is the price of AAPL?
 ```
-Root agent will ask whether you want **price** or **full report**.
-
-## 📄 Sample Output
-
-```
-## Stock Analysis Report: AAPL
-**Current Price:** $183.12
-
-### Fundamental Analysis
-...
-
-### Valuation Analysis
-...
----
 
 ## ✅ LLMOps Project Requirements — Detailed Checklist
 
